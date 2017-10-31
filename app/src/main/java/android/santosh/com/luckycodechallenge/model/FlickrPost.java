@@ -13,8 +13,8 @@ public class FlickrPost {
     @SerializedName("published")
     String published;
 
-    @SerializedName("link")
-    String mediaLink;
+    @SerializedName("media")
+    Media media;
 
     public String getTitle() {
         return title;
@@ -24,7 +24,16 @@ public class FlickrPost {
         return published;
     }
 
-    public String getMediaLink() {
-        return mediaLink;
+    public Media getMedia() {
+        return media;
+    }
+
+    public class Media{
+        @SerializedName("m")
+        String mediaLink;
+
+        public String getMediaLink() {
+            return mediaLink;
+        }
     }
 }
