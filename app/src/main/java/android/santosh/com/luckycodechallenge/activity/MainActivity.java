@@ -29,6 +29,8 @@ public class MainActivity extends BaseActivity implements SearchView.OnQueryText
     private RecyclerViewAdapter recyclerViewAdapter;
     private LinearLayoutManager recyclerViewLinearLayoutManger;
 
+    private String searchQuery = null;
+
     private boolean isLoading = false;
     int previousVisibleItems, visibleItemCount, totalItemCount;
     private RecyclerView.OnScrollListener recyclerViewOnScrollListener = new RecyclerView.OnScrollListener() {
@@ -55,6 +57,14 @@ public class MainActivity extends BaseActivity implements SearchView.OnQueryText
         setContentView(R.layout.activity_main);
         appAPI.getMainController().addMainControllerListener(this);
         bindUIElements();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (appAPI.getMainController().getFlickrPosts().size() > 0) {
+            recyclerViewAdapter.getFilter().filter(searchQuery);
+        }
     }
 
     private void bindUIElements() {
@@ -110,13 +120,17 @@ public class MainActivity extends BaseActivity implements SearchView.OnQueryText
     public boolean onQueryTextSubmit(String query) {
         //TODO: implement filter logic.
         Log.d(TAG, "onQueryTextSubmit, query: " + query);
-        return false;
+        searchQuery = query;
+        recyclerViewAdapter.getFilter().filter(searchQuery);
+        return true;
     }
 
     @Override
     public boolean onQueryTextChange(String newText) {
         Log.d(TAG, "onQueryTextChange, newText: " + newText);
-        return false;
+        searchQuery = newText;
+        recyclerViewAdapter.getFilter().filter(searchQuery);
+        return true;
     }
 
     @Override
@@ -125,6 +139,7 @@ public class MainActivity extends BaseActivity implements SearchView.OnQueryText
         errorMessageTextView.setVisibility(View.GONE);
         recyclerView.setVisibility(View.VISIBLE);
         recyclerViewAdapter.addAll(flickrPostList);
+        recyclerViewAdapter.getFilter().filter(searchQuery);
         isLoading = false;
     }
 
