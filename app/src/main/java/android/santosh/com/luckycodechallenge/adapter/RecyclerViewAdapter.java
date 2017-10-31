@@ -70,7 +70,11 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
     @Override
     public int getItemCount() {
-        return filteredFlickrPosts.size();
+        if (filteredFlickrPosts != null) {
+            return filteredFlickrPosts.size();
+        } else {
+            return 0;
+        }
     }
 
 
