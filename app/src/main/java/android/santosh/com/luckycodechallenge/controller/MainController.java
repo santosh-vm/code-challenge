@@ -66,9 +66,8 @@ public class MainController {
                                         stringyfiedJson = stringyfiedJson.substring(0, lastIndex);
                                     }
                                 }
-                                //Log.d(TAG, "fetchPost(), stringyfiedJSON: " + stringyfiedJson);
+
                                 FlickrResponse flickrResponse = gson.fromJson(stringyfiedJson, FlickrResponse.class);
-                                Log.d(TAG, "fetchPost() flickrResponse.getFlickrPosts().length: " + flickrResponse.getFlickrPosts().length);
                                 List<FlickrPost> flickrPostList = Arrays.asList(flickrResponse.getFlickrPosts());
                                 //As the API is giving is same list of posts on some request, doing this to prevent duplicates.
                                 for (FlickrPost flickrPost : flickrPostList) {

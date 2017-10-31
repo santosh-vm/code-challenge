@@ -97,17 +97,9 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                         flickrPosts.add(flickrPost);
                     }
                 }
-                Log.d(TAG, "performFiltering, flickrPosts.size(): " + flickrPosts.size());
-//                for (FlickrPost flickrPost : flickrPosts) {
-//                    Log.d(TAG, "performFiltering, flickrPost.gettitle(): " + flickrPost.getTitle());
-//                }
                 filterResults.values = flickrPosts;
                 filterResults.count = flickrPosts.size();
             } else {
-                Log.d(TAG, "performFiltering, originalFlickrPosts.size(): " + originalFlickrPosts.size());
-//                for (FlickrPost flickrPost : originalFlickrPosts) {
-//                    Log.d(TAG, "performFiltering, originalFlickrPosts flickrPost.gettitle(): " + flickrPost.getTitle());
-//                }
                 filterResults.values = originalFlickrPosts;
                 filterResults.count = originalFlickrPosts.size();
             }
@@ -120,9 +112,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             filteredFlickrPosts = (List<FlickrPost>) results.values;
             filterConstraint = constraint != null ? constraint.toString() : null;
             if (filteredFlickrPosts != null && filteredFlickrPosts.size() > 0) {
-                Log.d(TAG, "publishResults, final filtered list size(): " + filteredFlickrPosts.size());
                 for (FlickrPost flickrPost : filteredFlickrPosts) {
-                    Log.d(TAG, "publishResults, gettitle(): " + flickrPost.getTitle());
                 }
             }
             notifyDataSetChanged();
