@@ -1,0 +1,20 @@
+ -------------------------------------------------------------------------------------------------------------
+ Brief walkthrough of app design / choices made - Briefly explain your object oriented analysis and design
+ -------------------------------------------------------------------------------------------------------------
+ - I mainly used the MVC design pattern while building this project.
+ - The main logic of the parsing the Flickr JSON feed can be seen in the MainController.java class. 
+
+ - The way I designed this project is that I use an API layer that acts as barrier between the UI and the controller, here AppAPI.java is the layer at which all the communications go through.
+ - The AppAPI is initialized as a Singleton instance in the Application class of the project, in this case the AppApplication.java class
+ - In AppApplication class, the controllers and the API layers are initialized and the instance of this API later is exposed to the UI by getAPI() method.
+
+ - The MainActvity requests for flickr feed via the API to the controller as appAPI.getMainController().fetchPost(); . The Feedback to the UI via listeners, in this case via MainControllerListener interface.
+ - The paging logic is in line 36 of MainActivity.class
+ - I implemented the native Filterable interface for the search functionality. In RecyclerViewAdapter.java class The TitleFilter class has the filter based on Flickr post title. 
+
+
+ --------------------------------------------------------------------
+ Local environment setup instructions to compile and run the app
+ --------------------------------------------------------------------
+  - After cloning the project in the local machine, open the root folder of the project in Android Studio.
+  - Min SDK level is 19, target and Max SDK is 26.
