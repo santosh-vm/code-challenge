@@ -35,6 +35,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="5dp"
             android:layout_marginTop="15dp"
+            android:fontFamily="@font/roboto_bold"
             android:text="TEST"
             android:textSize="14sp"
             android:textStyle="bold"/>
@@ -45,6 +46,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="15dp"
             android:layout_marginTop="5dp"
+            android:fontFamily="@font/roboto_medium_italic"
             android:text="TEST"
             android:textSize="12sp"
             android:textStyle="italic"/>
