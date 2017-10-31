@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Lucky Day Code Challenge</string>
+    <string name="action_search">Search</string>
 </resources>
