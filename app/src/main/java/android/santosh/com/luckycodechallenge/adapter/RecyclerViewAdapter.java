@@ -45,7 +45,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
         if (viewHolder instanceof RecyclerViewItemViewHolder) {
             RecyclerViewItemViewHolder recyclerViewItemViewHolder = (RecyclerViewItemViewHolder) viewHolder;
-            final FlickrPost flickrPost = originalFlickrPosts.get(position);
+            final FlickrPost flickrPost = filteredFlickrPosts.get(position);
             if (TextUtils.isEmpty(flickrPost.getTitle()) || flickrPost.getTitle().trim().length() == 0) {
                 recyclerViewItemViewHolder.titleTextView.setText("<NO TITLE PRESENT>");
             } else {
