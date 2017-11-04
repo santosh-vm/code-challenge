@@ -11,4 +11,5 @@ import java.util.List;
 public interface MainControllerListener {
     void onFetchSuccess(List<FlickrPost> flickrPostList);
     void onFetchFailure();
+    void onPostupdate(List<FlickrPost> flickrPostList);
 }

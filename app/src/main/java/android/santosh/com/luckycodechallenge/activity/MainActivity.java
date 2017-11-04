@@ -10,6 +10,7 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -31,6 +32,8 @@ public class MainActivity extends BaseActivity implements SearchView.OnQueryText
 
     private String searchQuery = null;
 
+    private SearchView searchView;
+
     private boolean isLoading = false;
     int previousVisibleItems, visibleItemCount, totalItemCount;
     private RecyclerView.OnScrollListener recyclerViewOnScrollListener = new RecyclerView.OnScrollListener() {
@@ -45,7 +48,7 @@ public class MainActivity extends BaseActivity implements SearchView.OnQueryText
                 if (!isLoading && ((visibleItemCount + previousVisibleItems) >= totalItemCount) && totalItemCount < 50) {
                     //Log.d(TAG, "Let's Fetch more posts");
                     isLoading = true;
-                    appAPI.getMainController().fetchPost();
+                    appAPI.getMainController().fetchPost(searchQuery, true);
                 }
             }
         }
@@ -62,9 +65,6 @@ public class MainActivity extends BaseActivity implements SearchView.OnQueryText
     @Override
     protected void onResume() {
         super.onResume();
-        if (appAPI.getMainController().getFlickrPosts().size() > 0) {
-            recyclerViewAdapter.getFilter().filter(searchQuery);
-        }
     }
 
     private void bindUIElements() {
@@ -85,15 +85,14 @@ public class MainActivity extends BaseActivity implements SearchView.OnQueryText
         recyclerView.addOnScrollListener(recyclerViewOnScrollListener);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
 
-        List<FlickrPost> redditPosts = appAPI.getMainController().getFlickrPosts();
-        //Log.d(TAG,"onCreate redditPosts.size: "+redditPosts.size());
-        if (redditPosts.size() > 0) {
+        List<FlickrPost> flickrPosts = appAPI.getMainController().getFlickrPosts();
+        if (flickrPosts.size() > 0) {
             progressBar.setVisibility(View.GONE);
             recyclerView.setVisibility(View.VISIBLE);
-            recyclerViewAdapter.swapPosts(redditPosts);
+            recyclerViewAdapter.swapPosts(flickrPosts);
         } else {
             recyclerView.setVisibility(View.GONE);
-            appAPI.getMainController().fetchPost();
+            appAPI.getMainController().fetchPost("", false);
         }
     }
 
@@ -104,7 +103,7 @@ public class MainActivity extends BaseActivity implements SearchView.OnQueryText
         menuInflater.inflate(R.menu.menu_main_activity, menu);
 
         final MenuItem searchItem = menu.findItem(R.id.action_search);
-        final SearchView searchView = (SearchView) searchItem.getActionView();
+        searchView = (SearchView) searchItem.getActionView();
         searchView.setOnQueryTextListener(this);
 
         return super.onCreateOptionsMenu(menu);
@@ -113,33 +112,51 @@ public class MainActivity extends BaseActivity implements SearchView.OnQueryText
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        searchQuery = null;
         appAPI.getMainController().removeMainControllerListener(this);
     }
 
     @Override
     public boolean onQueryTextSubmit(String query) {
         //TODO: implement filter logic.
-        Log.d(TAG, "onQueryTextSubmit, query: " + query);
+        //Log.d(TAG, "onQueryTextSubmit, query: " + query);
         searchQuery = query;
-        recyclerViewAdapter.getFilter().filter(searchQuery);
+        searchView.clearFocus();
+        recyclerView.setVisibility(View.GONE);
+        progressBar.setVisibility(View.VISIBLE);
+        appAPI.getMainController().fetchPost(searchQuery, false);
         return true;
     }
 
     @Override
     public boolean onQueryTextChange(String newText) {
-        Log.d(TAG, "onQueryTextChange, newText: " + newText);
+        //Log.d(TAG, "onQueryTextChange, newText: " + newText);
         searchQuery = newText;
-        recyclerViewAdapter.getFilter().filter(searchQuery);
+        if (TextUtils.isEmpty(newText)) {
+            recyclerView.setVisibility(View.GONE);
+            progressBar.setVisibility(View.VISIBLE);
+            appAPI.getMainController().fetchPost(searchQuery, false);
+        }
         return true;
     }
 
     @Override
     public void onFetchSuccess(List<FlickrPost> flickrPostList) {
+        //Log.d(TAG, "onFetchSuccess");
+        progressBar.setVisibility(View.GONE);
+        errorMessageTextView.setVisibility(View.GONE);
+        recyclerView.setVisibility(View.VISIBLE);
+        recyclerViewAdapter.swapPosts(flickrPostList);
+        isLoading = false;
+    }
+
+    @Override
+    public void onPostupdate(List<FlickrPost> flickrPostList) {
+        //Log.d(TAG, "onPostupdate");
         progressBar.setVisibility(View.GONE);
         errorMessageTextView.setVisibility(View.GONE);
         recyclerView.setVisibility(View.VISIBLE);
         recyclerViewAdapter.addAll(flickrPostList);
-        recyclerViewAdapter.getFilter().filter(searchQuery);
         isLoading = false;
     }
 

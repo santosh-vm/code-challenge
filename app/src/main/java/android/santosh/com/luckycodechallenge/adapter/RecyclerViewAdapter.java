@@ -9,8 +9,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Filter;
-import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -23,13 +21,10 @@ import java.util.List;
  * Created by Santosh on 10/31/17.
  */
 
-public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements Filterable {
+public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private static String TAG = RecyclerViewAdapter.class.getSimpleName();
     private Context context;
-    private List<FlickrPost> originalFlickrPosts = new ArrayList<>();
-    private List<FlickrPost> filteredFlickrPosts = new ArrayList<>();
-
-    private String filterConstraint;
+    private List<FlickrPost> flickrPosts = new ArrayList<>();
 
     public RecyclerViewAdapter(Context context) {
         this.context = context;
@@ -45,7 +40,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
         if (viewHolder instanceof RecyclerViewItemViewHolder) {
             RecyclerViewItemViewHolder recyclerViewItemViewHolder = (RecyclerViewItemViewHolder) viewHolder;
-            final FlickrPost flickrPost = filteredFlickrPosts.get(position);
+            final FlickrPost flickrPost = flickrPosts.get(position);
             if (TextUtils.isEmpty(flickrPost.getTitle()) || flickrPost.getTitle().trim().length() == 0) {
                 recyclerViewItemViewHolder.titleTextView.setText("<NO TITLE PRESENT>");
             } else {
@@ -70,53 +65,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
     @Override
     public int getItemCount() {
-        if (filteredFlickrPosts != null) {
-            return filteredFlickrPosts.size();
-        } else {
-            return 0;
-        }
-    }
-
-
-    @Override
-    public Filter getFilter() {
-        return new TitleFilter();
-    }
-
-    private class TitleFilter extends Filter {
-
-        @Override
-        protected FilterResults performFiltering(CharSequence constraint) {
-            Log.d(TAG, "performFiltering, constraint: " + constraint);
-            final FilterResults filterResults = new FilterResults();
-            if (!TextUtils.isEmpty(constraint)) {
-                String constraintText = constraint.toString().toLowerCase();
-                final List<FlickrPost> flickrPosts = new ArrayList<FlickrPost>();
-                for (FlickrPost flickrPost : originalFlickrPosts) {
-                    if (flickrPost.getTitle().toLowerCase().contains(constraintText)) {
-                        flickrPosts.add(flickrPost);
-                    }
-                }
-                filterResults.values = flickrPosts;
-                filterResults.count = flickrPosts.size();
-            } else {
-                filterResults.values = originalFlickrPosts;
-                filterResults.count = originalFlickrPosts.size();
-            }
-            return filterResults;
-        }
-
-        @Override
-        protected void publishResults(CharSequence constraint, FilterResults results) {
-            Log.d(TAG, "publishResults, constraint: " + constraint);
-            filteredFlickrPosts = (List<FlickrPost>) results.values;
-            filterConstraint = constraint != null ? constraint.toString() : null;
-            if (filteredFlickrPosts != null && filteredFlickrPosts.size() > 0) {
-                for (FlickrPost flickrPost : filteredFlickrPosts) {
-                }
-            }
-            notifyDataSetChanged();
-        }
+        return flickrPosts.size();
     }
 
     public class RecyclerViewItemViewHolder extends RecyclerView.ViewHolder {
@@ -135,28 +84,15 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     }
 
     public void swapPosts(List<FlickrPost> flickrPostList) {
-        this.originalFlickrPosts.clear();
-        this.originalFlickrPosts.addAll(flickrPostList);
-        this.filteredFlickrPosts.addAll(flickrPostList);
-        if (filterConstraint != null) {
-            getFilter().filter(filterConstraint);
-        } else {
-            notifyDataSetChanged();
-        }
+        this.flickrPosts.clear();
+        this.flickrPosts.addAll(flickrPostList);
+        notifyDataSetChanged();
     }
 
     private void add(FlickrPost flickrPost) {
-        if (!originalFlickrPosts.contains(flickrPost)) {
-            originalFlickrPosts.add(flickrPost);
-            if (TextUtils.isEmpty(filterConstraint)) {
-                notifyItemInserted(originalFlickrPosts.size() - 1);
-            }
-        }
-        if (!filteredFlickrPosts.contains(flickrPost)) {
-            filteredFlickrPosts.add(flickrPost);
-            if (!TextUtils.isEmpty(filterConstraint)) {
-                getFilter().filter(filterConstraint);
-            }
+        if (!flickrPosts.contains(flickrPost)) {
+            flickrPosts.add(flickrPost);
+            notifyItemInserted(flickrPosts.size() - 1);
         }
     }
 

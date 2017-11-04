@@ -4,6 +4,7 @@ import android.os.Handler;
 import android.santosh.com.luckycodechallenge.listeners.MainControllerListener;
 import android.santosh.com.luckycodechallenge.model.FlickrPost;
 import android.santosh.com.luckycodechallenge.response.FlickrResponse;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.google.gson.Gson;
@@ -28,7 +29,7 @@ import okhttp3.Response;
 
 public class MainController {
     private static String TAG = MainController.class.getSimpleName();
-    private static String FLICKR_POST_LIST_URL = "https://api.flickr.com/services/feeds/photos_public.gne?format=json";
+    private static String FLICKR_POST_LIST_URL = "https://api.flickr.com/services/feeds/photos_public.gne?format=json&tags=%s";
 
     private Handler uiHandler;
     private ExecutorService executorService;
@@ -45,14 +46,20 @@ public class MainController {
         this.gson = new GsonBuilder().create();
     }
 
-    public void fetchPost() {
+    public void fetchPost(final String tag, final boolean isPaging) {
         if (executorService != null && !executorService.isShutdown()) {
             executorService.execute(new Runnable() {
                 @Override
                 public void run() {
                     try {
+                        String finalTag;
+                        if (TextUtils.isEmpty(tag)) {
+                            finalTag = "";
+                        } else {
+                            finalTag = tag;
+                        }
                         Request request = new Request.Builder()
-                                .url(FLICKR_POST_LIST_URL)
+                                .url(String.format(Locale.US, FLICKR_POST_LIST_URL, finalTag))
                                 .build();
                         Response response = client.newCall(request).execute();
                         String stringyfiedJson = new String(response.body().bytes(), "UTF-8");
@@ -69,13 +76,20 @@ public class MainController {
 
                                 FlickrResponse flickrResponse = gson.fromJson(stringyfiedJson, FlickrResponse.class);
                                 List<FlickrPost> flickrPostList = Arrays.asList(flickrResponse.getFlickrPosts());
-                                //As the API is giving is same list of posts on some request, doing this to prevent duplicates.
-                                for (FlickrPost flickrPost : flickrPostList) {
-                                    if (!flickrPosts.contains(flickrPost)) {
-                                        flickrPosts.add(flickrPost);
+                                if (isPaging) {
+                                    //As the API is giving is same list of posts on some request, doing this to prevent duplicates.
+                                    for (FlickrPost flickrPost : flickrPostList) {
+                                        if (!flickrPosts.contains(flickrPost)) {
+                                            flickrPosts.add(flickrPost);
+                                        }
                                     }
+                                    notifyFlickrPostListUpdateSuccess(flickrPostList);
+                                } else {
+                                    Log.d(TAG,"in the else block");
+                                    flickrPosts.clear();
+                                    flickrPosts.addAll(flickrPostList);
+                                    notifyFlickrPostListFetchSuccess(flickrPosts);
                                 }
-                                notifyFlickrPostListFetchSuccess(flickrPostList);
                                 break;
                             default:
                                 notifyFlickrPostListFetchFailure();
@@ -97,7 +111,7 @@ public class MainController {
         }
     }
 
-    public void resetData(){
+    public void resetData() {
         flickrPosts.clear();
     }
 
@@ -113,7 +127,7 @@ public class MainController {
         }
     }
 
-    public void notifyFlickrPostListFetchSuccess(final List<FlickrPost> flickrPostList) {
+    private void notifyFlickrPostListFetchSuccess(final List<FlickrPost> flickrPostList) {
         if (mainControllerListeners != null && mainControllerListeners.size() > 0) {
             for (final MainControllerListener mainControllerListener : mainControllerListeners) {
                 uiHandler.post(new Runnable() {
@@ -126,7 +140,20 @@ public class MainController {
         }
     }
 
-    public void notifyFlickrPostListFetchFailure() {
+    private void notifyFlickrPostListUpdateSuccess(final List<FlickrPost> flickrPostList) {
+        if (mainControllerListeners != null && mainControllerListeners.size() > 0) {
+            for (final MainControllerListener mainControllerListener : mainControllerListeners) {
+                uiHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mainControllerListener.onPostupdate(flickrPostList);
+                    }
+                });
+            }
+        }
+    }
+
+    private void notifyFlickrPostListFetchFailure() {
         if (mainControllerListeners != null && mainControllerListeners.size() > 0) {
             for (final MainControllerListener mainControllerListener : mainControllerListeners) {
                 uiHandler.post(new Runnable() {
